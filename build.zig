@@ -31,13 +31,13 @@ pub fn build(b: *std.build.Builder) !void {
     lib.install();
 }
 
-pub fn createLib(name: []const u8, root_src: ?[]const u8, b: *std.build.Builder, playdate_sdk_path: []const u8, arm_toolchain_path: []const u8) *std.build.LibExeObjStep {
+pub fn createLib(name: []const u8, root_src: ?[]const u8, b: *std.build.Builder, playdate_sdk_path: []const u8, arm_toolchain_path: []const u8, libc_txt_path: []const u8) *std.build.LibExeObjStep {
     const lib = b.addSharedLibrary(name, root_src, .unversioned);
     lib.setOutputDir("zig-out/lib");
-    setupStep(b, lib, playdate_sdk_path, arm_toolchain_path);
+    setupStep(b, lib, playdate_sdk_path, arm_toolchain_path, libc_txt_path);
     return lib;
 }
-pub fn createElf(b: *std.build.Builder, lib: *std.build.LibExeObjStep, playdate_sdk_path: []const u8, arm_toolchain_path: []const u8) *std.build.LibExeObjStep {
+pub fn createElf(b: *std.build.Builder, lib: *std.build.LibExeObjStep, playdate_sdk_path: []const u8, arm_toolchain_path: []const u8, libc_txt_path: []const u8) *std.build.LibExeObjStep {
     const game_elf = b.addExecutable("pdex.elf", null);
     game_elf.addObjectFile(b.pathJoin(&.{ lib.output_dir.?, b.fmt("{s}{s}", .{ lib.name, playdate_target.getObjectFormat().fileExt(playdate_target.cpu_arch.?) }) }));
     game_elf.step.dependOn(&lib.step);
@@ -46,18 +46,18 @@ pub fn createElf(b: *std.build.Builder, lib: *std.build.LibExeObjStep, playdate_
         "-DTARGET_EXTENSION=1",
     };
     game_elf.addCSourceFile(b.pathJoin(&.{ playdate_sdk_path, "/C_API/buildsupport/setup.c" }), &c_args);
-    setupStep(b, game_elf, playdate_sdk_path, arm_toolchain_path);
+    setupStep(b, game_elf, playdate_sdk_path, arm_toolchain_path, libc_txt_path);
 
     return game_elf;
 }
-fn setupStep(b: *std.build.Builder, step: *std.build.LibExeObjStep, playdate_sdk_path: []const u8, arm_toolchain_path: []const u8) void {
+fn setupStep(b: *std.build.Builder, step: *std.build.LibExeObjStep, playdate_sdk_path: []const u8, arm_toolchain_path: []const u8, libc_txt_path: []const u8) void {
     step.setLinkerScriptPath(.{ .path = b.pathJoin(&.{ playdate_sdk_path, "/C_API/buildsupport/link_map.ld" }) });
     step.addIncludeDir(b.pathJoin(&.{ arm_toolchain_path, "/arm-none-eabi/include" }));
     step.addLibPath(b.pathJoin(&.{ arm_toolchain_path, "/lib/gcc/arm-none-eabi/11.2.1/thumb/", eabi_features }));
     step.addLibPath(b.pathJoin(&.{ arm_toolchain_path, "/arm-none-eabi/lib/thumb/", eabi_features }));
 
     step.addIncludeDir(b.pathJoin(&.{ playdate_sdk_path, "C_API" }));
-    step.setLibCFile(std.build.FileSource{ .path = "../zig-playdate/playdate-libc.txt" });
+    step.setLibCFile(std.build.FileSource{ .path = libc_txt_path });
 
     step.setTarget(playdate_target);
 
