@@ -64,6 +64,12 @@ pub fn drawRect(x: i32, y: i32, width: i32, height: i32, color: LCDSolidColor) v
 pub fn fillRect(x: i32, y: i32, width: i32, height: i32, color: LCDSolidColor) void {
     playdate.api.graphics.*.fillRect.?(x, y, width, height, @intCast(LCDColor, @enumToInt(color)));
 }
+pub fn drawEllipse(x: i32, y: i32, width: i32, height: i32, line_width: i32, start_angle: f32, end_angle: f32, color: LCDSolidColor) void {
+    playdate.api.graphics.*.drawEllipse.?(x, y, width, height, line_width, start_angle, end_angle, @intCast(LCDColor, @enumToInt(color)));
+}
+pub fn fillEllipse(x: i32, y: i32, width: i32, height: i32, start_angle: f32, end_angle: f32, color: LCDSolidColor) void {
+    playdate.api.graphics.*.fillEllipse.?(x, y, width, height, start_angle, end_angle, @intCast(LCDColor, @enumToInt(color)));
+}
 pub fn setLineCapStyle(endCapStyle: LCDLineCapStyle) void {
     playdate.api.graphics.*.setLineCapStyle.?(@enumToInt(endCapStyle));
 }
