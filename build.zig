@@ -62,8 +62,10 @@ fn setupStep(b: *std.build.Builder, step: *std.build.LibExeObjStep, playdate_sdk
 
     step.setTarget(playdate_target);
 
+    if (b.is_release) {
+        step.omit_frame_pointer = true;
+    }
     step.strip = true;
-    step.omit_frame_pointer = true;
     step.link_function_sections = true;
     step.link_z_notext = true; // needed for @cos func
     step.stack_size = 61800;
