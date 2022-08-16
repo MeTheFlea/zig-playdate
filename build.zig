@@ -79,19 +79,27 @@ pub const Paths = struct {
 
 pub fn setupPDC(b: *std.build.Builder, game_elf: *std.build.LibExeObjStep, lib: *std.build.LibExeObjStep, playdate_sdk_path: []const u8, arm_toolchain_path: []const u8, game_name: []const u8, paths: Paths, simulator_target: ?std.zig.CrossTarget) ?*std.build.LibExeObjStep {
     const pdc_input = b.pathJoin(&.{ b.install_path, paths.pdc_inputs_path });
+
+    const clear_pdc_inputs_path_step = b.addSystemCommand(&.{ "bash", "-c", b.fmt("rm -rf \"{s}\"", .{pdc_input}) });
+    clear_pdc_inputs_path_step.expected_exit_code = null;
+
     const pdc_step = b.addSystemCommand(&.{ "bash", "-c", b.fmt("{s}/bin/pdc -sdkpath {0s} --skip-unknown {1s} zig-out/{2s}.pdx", .{ playdate_sdk_path, pdc_input, game_name }) });
     pdc_step.step.dependOn(&game_elf.step);
+    pdc_step.step.dependOn(&clear_pdc_inputs_path_step.step);
 
     const playdate_copy_step = b.addSystemCommand(&.{ "bash", "-c", b.fmt("mkdir -p {0s} && mv zig-out/lib/lib{2s}.so {0s}/pdex.so && {1s}/arm-none-eabi/bin/objcopy -O binary zig-out/bin/pdex.elf {0s}/pdex.bin", .{ pdc_input, arm_toolchain_path, lib.name }) });
+    playdate_copy_step.step.dependOn(&clear_pdc_inputs_path_step.step);
     pdc_step.step.dependOn(&playdate_copy_step.step);
 
     const copy_assets_step = b.addSystemCommand(&.{ "bash", "-c", b.fmt("cp -r {0s}/* {1s}", .{ paths.assets_to_process, pdc_input }) });
+    copy_assets_step.step.dependOn(&clear_pdc_inputs_path_step.step);
     copy_assets_step.expected_exit_code = null;
     pdc_step.step.dependOn(&copy_assets_step.step);
 
     const copy_assets_raw_step = b.addSystemCommand(&.{ "bash", "-c", b.fmt("cp -r {0s}/* zig-out/{1s}.pdx", .{ paths.assets_to_copy_raw, game_name }) });
-    copy_assets_raw_step.expected_exit_code = null;
+    copy_assets_raw_step.step.dependOn(&clear_pdc_inputs_path_step.step);
     copy_assets_raw_step.step.dependOn(&pdc_step.step);
+    copy_assets_raw_step.expected_exit_code = null;
     b.getInstallStep().dependOn(&copy_assets_raw_step.step);
 
     if (simulator_target) |target| {
