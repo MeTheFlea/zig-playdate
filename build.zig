@@ -45,6 +45,7 @@ pub fn createElf(b: *std.build.Builder, lib: *std.build.LibExeObjStep, playdate_
         "-DTARGET_PLAYDATE=1",
         "-DTARGET_EXTENSION=1",
     };
+    game_elf.want_lto = false; // otherwise release build does not work
     game_elf.addCSourceFile(b.pathJoin(&.{ playdate_sdk_path, "/C_API/buildsupport/setup.c" }), &c_args);
     setupStep(b, game_elf, playdate_sdk_path, arm_toolchain_path, libc_txt_path);
 
