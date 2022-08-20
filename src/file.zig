@@ -135,7 +135,7 @@ pub fn read(file: *SDFile, buf: []u8, len: usize) !usize {
     if (val == -1) {
         return error.FilesystemError;
     }
-    return val;
+    return @intCast(usize, val);
 }
 pub fn write(file: *SDFile, buf: []const u8) !usize {
     // int playdate->file->write(SDFile* file, const void* buf, unsigned int len);
