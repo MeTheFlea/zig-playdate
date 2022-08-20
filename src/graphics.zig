@@ -13,6 +13,9 @@ pub fn clear(color: LCDSolidColor) void {
 pub fn setDrawOffset(dx: i32, dy: i32) void {
     playdate.api.graphics.*.setDrawOffset.?(dx, dy);
 }
+pub fn copyFrameBufferBitmap() *playdate.graphics.LCDBitmap {
+    return @ptrCast(*playdate.graphics.LCDBitmap, playdate.api.graphics.*.copyFrameBufferBitmap.?());
+}
 
 // Fonts & Text
 // https://sdk.play.date/1.12.2/Inside%20Playdate%20with%20C.html#_fonts_text
