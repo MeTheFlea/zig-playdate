@@ -9,6 +9,7 @@ pub const graphics = @import("graphics.zig");
 pub const system = @import("system.zig");
 pub const display = @import("display.zig");
 pub const file = @import("file.zig");
+pub const sound = @import("sound.zig");
 
 pub const allocator = std.mem.Allocator{
     .ptr = undefined,
