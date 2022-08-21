@@ -33,7 +33,7 @@ pub fn loadFont(path: []const u8) !*LCDFont {
     const font = playdate.api.graphics.*.loadFont.?(@ptrCast([*c]const u8, cstr_path), &err);
 
     if (err != null) {
-        const error_message = try std.fmt.allocPrint(playdate.allocator, "LoadFontError: {s}", .{std.mem.sliceTo(err, '0')});
+        const error_message = try std.fmt.allocPrint(playdate.allocator, "LoadFontError: {s}", .{std.mem.sliceTo(err, 0)});
         defer playdate.allocator.free(error_message);
         playdate.system.@"error"(error_message);
         return error.LoadFontError;
@@ -97,7 +97,7 @@ pub fn loadBitmap(path: []const u8) !*LCDBitmap {
     const font = playdate.api.graphics.*.loadBitmap.?(@ptrCast([*c]const u8, cstr_path), &err);
 
     if (err != null) {
-        const error_message = try std.fmt.allocPrint(playdate.allocator, "LoadBitmapError: {s}", .{std.mem.sliceTo(err, '0')});
+        const error_message = try std.fmt.allocPrint(playdate.allocator, "LoadBitmapError: {s}", .{std.mem.sliceTo(err, 0)});
         defer playdate.allocator.free(error_message);
         playdate.system.@"error"(error_message);
         return error.LoadBitmapError;
@@ -129,6 +129,54 @@ pub fn getBitmapData(bitmap: *LCDBitmap) BitmapData {
         .height = @intCast(i32, height),
         .row_bytes = @intCast(i32, row_bytes),
     };
+}
+
+// BitmapTables
+// https://sdk.play.date/1.12.3/Inside%20Playdate%20with%20C.html#_bitmaptables
+pub const LCDBitmapTable = anyopaque;
+
+pub fn newBitmapTable(count: i32, width: i32, height: i32) *LCDBitmapTable {
+    return @ptrCast(*LCDBitmapTable, playdate.api.graphics.*.newBitmapTable.?(count, width, height));
+}
+pub fn loadIntoBitmapTable(path: []const u8, table: *LCDBitmapTable) !void {
+    const cstr_path = try std.cstr.addNullByte(playdate.allocator, path);
+    defer playdate.allocator.free(cstr_path);
+
+    var err: [*c]const u8 = null;
+
+    playdate.api.graphics.*.loadIntoBitmapTable.?(@ptrCast([*c]const u8, cstr_path), @ptrCast(*c.LCDBitmapTable, table), &err);
+
+    if (err != null) {
+        const error_message = try std.fmt.allocPrint(playdate.allocator, "LoadIntoBitmapTableError: {s}", .{std.mem.sliceTo(err, 0)});
+        defer playdate.allocator.free(error_message);
+        playdate.system.@"error"(error_message);
+        return error.LoadIntoBitmapTableError;
+    }
+}
+pub fn getTableBitmap(table: *LCDBitmapTable, idx: i32) !*LCDBitmap {
+    const ptr = playdate.api.graphics.*.getTableBitmap.?(@ptrCast(*c.LCDBitmapTable, table), idx);
+    if (ptr == null) {
+        return error.IndexOutOfBounds;
+    } else {
+        return @ptrCast(*LCDBitmap, ptr);
+    }
+}
+pub fn loadBitmapTable(path: []const u8) !*LCDBitmapTable {
+    const cstr_path = try std.cstr.addNullByte(playdate.allocator, path);
+    defer playdate.allocator.free(cstr_path);
+
+    var err: [*c]const u8 = null;
+
+    const ptr = playdate.api.graphics.*.loadBitmapTable.?(@ptrCast([*c]const u8, cstr_path), &err);
+
+    if (err != null) {
+        const error_message = try std.fmt.allocPrint(playdate.allocator, "LoadBitmapTableError: {s}", .{std.mem.sliceTo(err, 0)});
+        defer playdate.allocator.free(error_message);
+        playdate.system.@"error"(error_message);
+        return error.LoadBitmapTableError;
+    }
+
+    return @ptrCast(*LCDBitmapTable, ptr);
 }
 
 // Graphics
