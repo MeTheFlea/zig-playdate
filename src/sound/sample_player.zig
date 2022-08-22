@@ -23,3 +23,16 @@ pub fn play(player: *SamplePlayer, repeat: i32, rate: f32) void {
 pub fn freePlayer(player: *SamplePlayer) void {
     playdate.api.sound.*.sampleplayer.*.freePlayer.?(@ptrCast(*c.SamplePlayer, player));
 }
+pub fn setVolume(player: *SamplePlayer, left: f32, right: f32) void {
+    playdate.api.sound.*.sampleplayer.*.setVolume.?(@ptrCast(*c.SamplePlayer, player), left, right);
+}
+pub fn getVolume(player: *SamplePlayer) struct { left: f32, right: f32 } {
+    var left: f32 = undefined;
+    var right: f32 = undefined;
+    playdate.api.sound.*.sampleplayer.*.getVolume.?(@ptrCast(*c.SamplePlayer, player), &left, &right);
+
+    return .{
+        .left = left,
+        .right = right,
+    };
+}
