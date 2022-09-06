@@ -68,7 +68,7 @@ pub fn log(
             return,
     } ++ "): ";
 
-    const prefix = "[" ++ level.asText() ++ "] " ++ scope_prefix;
+    const prefix = "[" ++ comptime level.asText() ++ "] " ++ scope_prefix;
 
     const str = nosuspend std.fmt.allocPrint(allocator, prefix ++ format, args) catch return;
     defer allocator.free(str);
